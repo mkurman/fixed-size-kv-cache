@@ -1,0 +1,21 @@
+[project]
+name = "fixed-size-kv-cache"
+version = "0.1.0"
+description = "A project for fixed size key-value cache"
+authors = [
+    { name = "Mariusz Kurman", email = "mariusz.kurman@gmail.com" }
+]
+
+dependencies = [
+    "transformers",
+    "torch",
+    "datasets",
+    "jupyter",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]  # includes all packages in the fixed_size_kv_cache directory and subdirectories
