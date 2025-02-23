@@ -4,12 +4,14 @@
 
 This project implements a fixed-size key-value cache for use in transformer models, specifically designed to work with the LLaMA model. The cache dynamically truncates the key and value states based on attention weights, ensuring efficient memory usage and performance.
 
+![Fixed Size Key-Value Cache](image_fx_.jpg)
+
 ## Installation
 
 To install the required dependencies, run:
 
 ```bash
-pip install -e .
+pip install -U pip && pip install -e .
 ```
 
 ## Usage

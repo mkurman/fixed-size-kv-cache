@@ -156,3 +156,5 @@ class FixedSizeDynamicCache(DynamicCache):
         # Free up memory if the cache is larger than the kv_cache_size
         if self.free_memory and saved_seq_len > self.kv_cache_size:
             torch.cuda.empty_cache()
+
+        return self.key_cache[layer_idx], self.value_cache[layer_idx]
