@@ -74,11 +74,9 @@ def forward(
     # ...existing code...
 
     if past_key_value is not None:
-        past_key_value = FixedSizeDynamicCache.from_legacy_cache(
+        past_key_value.key_cache[self.layer_idx], past_key_value.value_cache[self.layer_idx] = FixedSizeDynamicCache.from_legacy_cache(
             past_key_value, self.layer_idx
-        )
-
-        past_key_value.cache_truncate(
+        ).cache_truncate(
             self.layer_idx,
             query_states,
             key_states,
