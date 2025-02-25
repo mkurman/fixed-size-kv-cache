@@ -7,10 +7,12 @@ from transformers.models.llama.modeling_llama import (
     eager_attention_forward,
 )
 from transformers.processing_utils import Unpack
-from transformers.cache_utils import Cache
+from transformers.cache_utils import Cache, DynamicCache
 from transformers.modeling_flash_attention_utils import FlashAttentionKwargs
-from fixed_size_kv_cache.dynamic_cache import FixedSizeDynamicCache
+from fixed_size_kv_cache import FixedSizeDynamicCache
 import logging
+import os
+import types
 
 logger = logging.getLogger(__name__)
 
@@ -73,9 +75,28 @@ def forward(
     # Fixed size kv cache
 
     if past_key_value is not None:
-        past_key_value.key_cache[self.layer_idx], past_key_value.value_cache[self.layer_idx] = FixedSizeDynamicCache.from_legacy_cache(
-            past_key_value, self.layer_idx
-        ).cache_truncate(
+        # Handle case where past_key_value is a DynamicCache but not FixedSizeDynamicCache
+        # We need to "convert" the instance to FixedSizeDynamicCache to enable all features
+        if isinstance(past_key_value, DynamicCache) and not isinstance(past_key_value, FixedSizeDynamicCache):
+            # Store original key and value cache data
+            original_key_cache = past_key_value.key_cache
+            original_value_cache = past_key_value.value_cache
+            
+            # Python magic: Change the class of the existing instance
+            # This preserves the object's identity while changing its behavior
+            past_key_value.__class__ = FixedSizeDynamicCache
+            
+            # Re-initialize the instance with FixedSizeDynamicCache defaults
+            FixedSizeDynamicCache.__init__(past_key_value)
+            
+            # Restore the original cache data
+            past_key_value.key_cache = original_key_cache
+            past_key_value.value_cache = original_value_cache
+            
+            logger.debug(f"Upgraded DynamicCache to FixedSizeDynamicCache")
+            
+        # Now we can use the FixedSizeDynamicCache methods
+        past_key_value.key_cache[self.layer_idx], past_key_value.value_cache[self.layer_idx] = past_key_value.cache_truncate(
             self.layer_idx,
             query_states,
             key_states,
